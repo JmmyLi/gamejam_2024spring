@@ -1,22 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class EnemyPath : MonoBehaviour
 {
     [SerializeField] public GameObject path;
     
-    public Transform[] waypoints;
+    private Transform[] waypoints;
     private int _currentWaypointIndex = 0;
-    private float _speed = 2f;
+    [SerializeField] public float _speed = 2f;
     public float _rotateSpeed;
     public bool isStart = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        //path.transform.position = new Vector3();
+        Transform[] transforms = path.GetComponentsInChildren<Transform>();
+        waypoints = transforms.Skip(1).ToArray();
     }
 
     // Update is called once per frame
@@ -30,18 +32,24 @@ public class EnemyPath : MonoBehaviour
         else
         {
             Vector3 dir = wp.position - transform.position;
+            float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle - 90f);
             if ((transform.up.normalized - dir.normalized).magnitude < 0.1f)
             {
+                transform.rotation = targetRotation;
                 transform.position = Vector3.MoveTowards(
                 transform.position,
                 wp.position,
                 _speed * Time.deltaTime);
             }
-            if (isStart) transform.up = Vector3.RotateTowards(transform.up, dir.normalized, _rotateSpeed * Time.deltaTime, 0f);
-            else isStart = true;
-            //Quaternion toRotation = Quaternion.FromToRotation(transform.position,dir);
-
-            //transform.rotation = Quaternion.LookRotation(dir, Vector3.forward);
+            else
+            {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotateSpeed * Time.deltaTime);
+            }
+            //if (isStart)
+            //{
+            //}
+            //else isStart = true;
         }
     }
 }
