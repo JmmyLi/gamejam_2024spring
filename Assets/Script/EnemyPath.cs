@@ -14,42 +14,46 @@ public class EnemyPath : MonoBehaviour
     public float _rotateSpeed;
     public bool isStart = false;
 
-    // Start is called before the first frame update
     void Start()
     {
-        Transform[] transforms = path.GetComponentsInChildren<Transform>();
-        waypoints = transforms.Skip(1).ToArray();
+        if (path != null)
+        {
+            Transform[] transforms = path.GetComponentsInChildren<Transform>();
+            waypoints = transforms.Skip(1).ToArray();
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        Transform wp = waypoints[_currentWaypointIndex];
-        if (Vector3.Distance(transform.position, wp.position) < 0.01f)
+        if (path != null)
         {
-            _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
-        }
-        else
-        {
-            Vector3 dir = wp.position - transform.position;
-            float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle - 90f);
-            if ((transform.up.normalized - dir.normalized).magnitude < 0.1f)
+            Transform wp = waypoints[_currentWaypointIndex];
+            if (Vector3.Distance(transform.position, wp.position) < 0.01f)
             {
-                transform.rotation = targetRotation;
-                transform.position = Vector3.MoveTowards(
-                transform.position,
-                wp.position,
-                _speed * Time.deltaTime);
+                _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
             }
             else
             {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotateSpeed * Time.deltaTime);
+                Vector3 dir = wp.position - transform.position;
+                float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle - 90f);
+                if ((transform.up.normalized - dir.normalized).magnitude < 0.1f)
+                {
+                    transform.rotation = targetRotation;
+                    transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    wp.position,
+                    _speed * Time.deltaTime);
+                }
+                else
+                {
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotateSpeed * Time.deltaTime);
+                }
+                //if (isStart)
+                //{
+                //}
+                //else isStart = true;
             }
-            //if (isStart)
-            //{
-            //}
-            //else isStart = true;
         }
     }
 }
