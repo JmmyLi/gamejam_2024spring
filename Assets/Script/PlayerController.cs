@@ -33,8 +33,12 @@ public class PlayerController : MonoBehaviour
     public GameObject[] enemies;
     public GameObject[] lightSources;
     public GameObject[] bushes;
+    public List<GameObject> spawns = new List<GameObject>();
 
     public bool bright;
+
+    public float lightinTime;
+    public float lightinCounter;
 
     void Start()
     {
@@ -80,8 +84,29 @@ public class PlayerController : MonoBehaviour
                 timer.Restart(16);
             }
             LightControl();
+            if (Input.GetKeyDown("q"))
+            {
+                lightinCounter = lightinTime;
+                foreach (GameObject enemy in enemies)
+                {
+                    enemy.GetComponentInChildren<EnemyFOV>().warn = true;
+                    enemy.GetComponentInChildren<EnemyFOV>().brightViewCone.intensity = 1;
+                    enemy.GetComponentInChildren<EnemyFOV>().darkViewCone.intensity = 1;
+                }
+            }
         }
         SunControl();
+        if (lightinCounter > 0)
+        {
+            lightinCounter -= Time.deltaTime;
+            if (lightinCounter <= 0)
+            {
+                foreach (GameObject enemy in enemies)
+                {
+                    enemy.GetComponentInChildren<EnemyFOV>().warn = false;
+                }
+            }
+        }
     }
 
     void ProcessInputs()
@@ -118,6 +143,13 @@ public class PlayerController : MonoBehaviour
             enemy.transform.rotation = Quaternion.Euler(0, 0, enemy.GetComponent<EnemyPath>().respawnDirection);
             enemy.GetComponentInChildren<EnemyPath>()._currentWaypointIndex = 0;
             enemy.GetComponentInChildren<EnemyFOV>().warn = false;
+        }
+        int num = spawns.Count;
+        for (int i = 1; i < num + 1; i++)
+        {
+            GameObject temp = spawns[num - i];
+            spawns.Remove(temp);
+            Destroy(temp);
         }
     }
 

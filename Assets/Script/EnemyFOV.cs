@@ -10,8 +10,8 @@ public class EnemyFOV : MonoBehaviour
     [SerializeField] public float darkViewDistance;
     [SerializeField] public float darkViewAngle;
     private Vector3 direction;
-    [SerializeField] private Light2D brightViewCone;
-    [SerializeField] private Light2D darkViewCone;
+    [SerializeField] public Light2D brightViewCone;
+    [SerializeField] public Light2D darkViewCone;
     [SerializeField] private GameObject player;
     public bool warn;
 
