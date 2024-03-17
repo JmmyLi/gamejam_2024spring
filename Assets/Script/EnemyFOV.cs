@@ -13,6 +13,7 @@ public class EnemyFOV : MonoBehaviour
     [SerializeField] private Light2D brightViewCone;
     [SerializeField] private Light2D darkViewCone;
     [SerializeField] private GameObject player;
+    public bool warn;
 
     private void Start()
     {
@@ -25,35 +26,44 @@ public class EnemyFOV : MonoBehaviour
         darkViewCone.pointLightOuterRadius = darkViewDistance;
         darkViewCone.pointLightInnerAngle = darkViewAngle;
         darkViewCone.pointLightOuterAngle = darkViewAngle;
+
+        warn = false;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        brightViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
-        darkViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
-
-        direction = transform.up;
-        Vector3 dir = (player.transform.position - transform.position).normalized;
-        if (Vector3.Distance(transform.position, player.transform.position) < brightViewDistance)
+        if (!warn)
         {
-            if (Vector3.Angle(direction, dir) < brightViewAngle / 2)
+            brightViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
+            darkViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
+
+            direction = transform.up;
+            Vector3 dir = (player.transform.position - transform.position).normalized;
+            if (player.GetComponent<PlayerController>().bright && Vector3.Distance(transform.position, player.transform.position) < brightViewDistance)
             {
-                RaycastHit2D ray = Physics2D.Raycast(transform.position, dir, brightViewDistance, LayerMask.GetMask("Physical"));
-                if (ray.collider.gameObject == player)
+                if (Vector3.Angle(direction, dir) < brightViewAngle / 2)
                 {
-                    player.GetComponent<PlayerController>().Die();
+                    RaycastHit2D ray = Physics2D.Raycast(transform.position, dir, brightViewDistance, LayerMask.GetMask("Physical"));
+                    if (ray.collider.gameObject == player)
+                    {
+                        player.GetComponent<PlayerController>().Die();
+                        brightViewCone.intensity = 1;
+                        warn = true;
+                    }
                 }
             }
-        }
-        if (Vector3.Distance(transform.position, player.transform.position) < darkViewDistance)
-        {
-            if (Vector3.Angle(direction, dir) < darkViewAngle / 2)
+            if (Vector3.Distance(transform.position, player.transform.position) < darkViewDistance)
             {
-                RaycastHit2D ray = Physics2D.Raycast(transform.position, dir, darkViewDistance, LayerMask.GetMask("Physical"));
-                if (ray.collider.gameObject == player)
+                if (Vector3.Angle(direction, dir) < darkViewAngle / 2)
                 {
-                    player.GetComponent<PlayerController>().Die();
+                    RaycastHit2D ray = Physics2D.Raycast(transform.position, dir, darkViewDistance, LayerMask.GetMask("Physical"));
+                    if (ray.collider != null && ray.collider.gameObject == player)
+                    {
+                        player.GetComponent<PlayerController>().Die();
+                        darkViewCone.intensity = 1;
+                        warn = true;
+                    }
                 }
             }
         }

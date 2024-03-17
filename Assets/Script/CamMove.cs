@@ -50,7 +50,6 @@ public class CameraShareScript : MonoBehaviour
             else if(!(isEdge && Input.mousePosition.x <= Screen.width - rmEdgeDelta
                 && (Mathf.Abs(Input.mousePosition.x) + Mathf.Abs(Input.mousePosition.y)) >= rmEdgeDelta
                 && Input.mousePosition.y <= Screen.height - rmEdgeDelta)) { transform.Translate(Dir.x * speed / 100, Dir.y * speed / 100, 0); }
-
         }
         else
         {

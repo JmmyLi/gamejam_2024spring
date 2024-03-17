@@ -12,8 +12,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Respawn")]
     public Timer timer;
-    public Vector3 respawnPosition;
-    public float respawnTime;
+    public GameObject checkPoint;
     public float respawnDelay;
     public float respawnCountDown = 0;
     public SpriteRenderer spriteRenderer;
@@ -31,6 +30,12 @@ public class PlayerController : MonoBehaviour
     public GameObject sun;
     private Light2D sunLight;
 
+    public GameObject[] enemies;
+    public GameObject[] lightSources;
+    public GameObject[] bushes;
+
+    public bool bright;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -40,9 +45,12 @@ public class PlayerController : MonoBehaviour
         shadowCaster = GetComponent<ShadowCaster2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         sunLight = sun.GetComponent<Light2D>();
+        enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        lightSources = GameObject.FindGameObjectsWithTag("Light");
+        bushes = GameObject.FindGameObjectsWithTag("Bush");
     }
 
-    void FixedUpdate()
+    void Update()
     {
         if (respawnCountDown > 0)
         {
@@ -54,11 +62,22 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            DetectLight();
             ProcessInputs();
             Move();
-            if (Input.GetKeyDown("r"))
-             {
+            if (Input.GetKeyDown("t"))
+            {
                 Respawn();
+                timer.Restart(8);
+            }
+            if (Input.GetKeyDown("r"))
+            {
+                Respawn();
+            }
+            if (Input.GetKeyDown("y"))
+            {
+                Respawn();
+                timer.Restart(16);
             }
             LightControl();
         }
@@ -80,10 +99,26 @@ public class PlayerController : MonoBehaviour
     public void Respawn()
     {
         rb.drag = 0;
-        transform.position = respawnPosition;
+        respawnCountDown = 0;
+        if (checkPoint == null)
+        {
+            transform.position = Vector3.zero;
+            timer.Restart(8);
+        }
+        else
+        {
+            transform.position = checkPoint.GetComponent<CheckPoint>().respawnPosition;
+            timer.Restart(checkPoint.GetComponent<CheckPoint>().respawnTime);
+        }
         spriteRenderer.enabled = true;
         shadowCaster.enabled = true;
-        timer.Restart(respawnTime);
+        foreach (GameObject enemy in enemies)
+        {
+            enemy.transform.position = enemy.GetComponent<EnemyPath>().respawnLocation;
+            enemy.transform.rotation = Quaternion.identity;
+            enemy.GetComponentInChildren<EnemyPath>()._currentWaypointIndex = 0;
+            enemy.GetComponentInChildren<EnemyFOV>().warn = false;
+        }
     }
 
     public void LightControl()
@@ -95,7 +130,7 @@ public class PlayerController : MonoBehaviour
 
     public void SunControl()
     {
-        sun.transform.position = new Vector3((((timer.time % (24 * 60)) / (24 * 60)) - 0.5f) * 250, 250, 0);
+        sun.transform.position = new Vector3((((timer.time % (24 * 60)) / (24 * 60)) - 0.5f) * 1500, 250, 0);
         sunLight.intensity = Mathf.Clamp(-Mathf.Cos(timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 2;
         sunLight.color = new Color(1, Mathf.Clamp(-Mathf.Cos(timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0.1f, 1) * 0.5f, 0, 1);
     }
@@ -109,8 +144,31 @@ public class PlayerController : MonoBehaviour
             rb.drag = 1000;
             respawnCountDown = respawnDelay;
             playerLight.color = deadColor;
-            playerLight.intensity = Mathf.Clamp(Mathf.Cos(timer.time / (24 * 60) * 2 * Mathf.PI) + 0.5f, 0, 1) * deadIntensity;
+            playerLight.intensity = deadIntensity;
             playerLight.pointLightOuterRadius = deadRadius;
+        }
+    }
+
+    public void DetectLight()
+    {
+        bright = false;
+        foreach (GameObject light in lightSources)
+        {
+            if (light.GetComponent<LightSource>().lighten(gameObject))
+            {
+                bright = true; break;
+            }
+        }
+        if (Mathf.Clamp(-Mathf.Cos(timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) > 0)
+        {
+            bright = true;
+        }
+        foreach (GameObject bush in bushes)
+        {
+            if (bush.GetComponent<Bush>().collided)
+            {
+                bright = false; break;
+            }
         }
     }
 }
