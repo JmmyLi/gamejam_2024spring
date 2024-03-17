@@ -30,6 +30,9 @@ public class EnemyFOV : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        brightViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
+        darkViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
+
         direction = transform.up;
         Vector3 dir = (player.transform.position - transform.position).normalized;
         if (Vector3.Distance(transform.position, player.transform.position) < brightViewDistance)
