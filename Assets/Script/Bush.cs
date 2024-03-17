@@ -12,7 +12,11 @@ public class Bush : MonoBehaviour
         {
             collided = true;
         }
-        else
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision != null && collision.gameObject.tag == "Player")
         {
             collided = false;
         }

@@ -19,6 +19,8 @@ public class CheckPoint : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player");
         }
         spriteRenderer = GetComponent<SpriteRenderer>();
+        respawnPosition = transform.position;
+        respawnPosition.z = 0;
     }
 
     private void Update()

@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
         foreach (GameObject enemy in enemies)
         {
             enemy.transform.position = enemy.GetComponent<EnemyPath>().respawnLocation;
-            enemy.transform.rotation = Quaternion.identity;
+            enemy.transform.rotation = Quaternion.Euler(0, 0, enemy.GetComponent<EnemyPath>().respawnDirection);
             enemy.GetComponentInChildren<EnemyPath>()._currentWaypointIndex = 0;
             enemy.GetComponentInChildren<EnemyFOV>().warn = false;
         }
@@ -170,5 +170,6 @@ public class PlayerController : MonoBehaviour
                 bright = false; break;
             }
         }
+        
     }
 }

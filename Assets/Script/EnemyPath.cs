@@ -20,6 +20,7 @@ public class EnemyPath : MonoBehaviour
     public int _currentWaypointIndex = 0;
     [SerializeField] public float _speed = 2f;
     public Vector3 respawnLocation;
+    public float respawnDirection;
     public float _rotateSpeed;
     public Behavior behavior;
     public bool isStart = false;
@@ -33,6 +34,9 @@ public class EnemyPath : MonoBehaviour
             Transform[] transforms = path.GetComponentsInChildren<Transform>();
             waypoints = transforms.Skip(1).ToArray();
         }
+        respawnDirection = transform.eulerAngles.z;
+        respawnLocation = transform.position;
+        respawnLocation.z = 0;
     }
 
     void FixedUpdate()
@@ -43,6 +47,10 @@ public class EnemyPath : MonoBehaviour
                 transform.Rotate(new Vector3(0, 0, -_rotateSpeed * Time.deltaTime)); break;
             case Behavior.constantTurnAnticlockwise:
                 transform.Rotate(new Vector3(0, 0, _rotateSpeed * Time.deltaTime)); break;
+            case Behavior.instantTurn:
+            case Behavior.waitTurn:
+            case Behavior.notTurn:
+                break;
         }
         if (path != null)
         {
@@ -51,14 +59,14 @@ public class EnemyPath : MonoBehaviour
                 stopCountDown -= Time.deltaTime;
             }
             Transform wp = waypoints[_currentWaypointIndex];
-            if (Vector3.Distance(transform.position, wp.position) < 0.01f)
+            if (Vector3.Distance(new Vector3(transform.position.x, transform.position.y, 0), new Vector3(wp.position.x, wp.position.y, 0)) < 0.01f)
             {
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % waypoints.Length;
                 stopCountDown = stopTime;
             }
             else if (stopCountDown <= 0)
             {
-                Vector3 dir = wp.position - transform.position;
+                Vector3 dir = new Vector3(wp.position.x, wp.position.y, 0) - new Vector3(transform.position.x, transform.position.y, 0);
                 float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
                 Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle - 90f);
                 switch (behavior)
@@ -69,7 +77,7 @@ public class EnemyPath : MonoBehaviour
                             transform.rotation = targetRotation;
                             transform.position = Vector3.MoveTowards(
                             transform.position,
-                            wp.position,
+                            new Vector3(wp.position.x, wp.position.y, 0),
                             _speed * Time.deltaTime);
                         }
                         else
@@ -81,7 +89,7 @@ public class EnemyPath : MonoBehaviour
                         transform.rotation = targetRotation;
                         transform.position = Vector3.MoveTowards(
                         transform.position,
-                        wp.position,
+                        new Vector3(wp.position.x, wp.position.y, 0),
                         _speed * Time.deltaTime);
                         break;
                     case Behavior.constantTurnAnticlockwise:
@@ -89,7 +97,7 @@ public class EnemyPath : MonoBehaviour
                     case Behavior.notTurn:
                         transform.position = Vector3.MoveTowards(
                         transform.position,
-                        wp.position,
+                        new Vector3(wp.position.x, wp.position.y, 0),
                         _speed * Time.deltaTime);
                         break;
                 }

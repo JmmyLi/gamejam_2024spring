@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class LineController : MonoBehaviour
 {
-    public static Vector3[] interactpos;
+    public Vector3[] interactpos = new Vector3[] {Vector3.zero, Vector3.zero};
     public Vector3 worldPos;
     public GameObject sprite;
     LineRenderer lr;
@@ -16,7 +17,6 @@ public class LineController : MonoBehaviour
         lr.positionCount = 2;
         worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         worldPos.z = 0;
-        interactpos = new Vector3[] { sprite.transform.position, worldPos};
     }
 
     // Update is called once per frame
@@ -24,8 +24,19 @@ public class LineController : MonoBehaviour
     {
         worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         worldPos.z = 0;
+        interactpos = new Vector3[] { Vector3.zero, Vector3.zero };
+        Debug.Log(interactpos.Length);
         interactpos[0] = sprite.transform.position;
-        interactpos[1] = worldPos;
+        Vector3 dir = (worldPos - sprite.transform.position).normalized;
+        RaycastHit2D ray = Physics2D.Raycast(sprite.transform.position, dir, 100, LayerMask.GetMask("Physical"));
+        if (ray.collider != null)
+        {
+            interactpos[1] = ray.point;
+        }
+        else
+        {
+            interactpos[1] = worldPos;
+        }
         lr.SetPositions(interactpos);
     }
 }

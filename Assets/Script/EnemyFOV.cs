@@ -17,6 +17,15 @@ public class EnemyFOV : MonoBehaviour
 
     private void Start()
     {
+        
+
+        warn = false;
+        player = GameObject.FindGameObjectWithTag("Player");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         brightViewCone.pointLightInnerRadius = brightViewDistance;
         brightViewCone.pointLightOuterRadius = brightViewDistance + 0.5f;
         brightViewCone.pointLightInnerAngle = brightViewAngle;
@@ -26,13 +35,6 @@ public class EnemyFOV : MonoBehaviour
         darkViewCone.pointLightOuterRadius = darkViewDistance;
         darkViewCone.pointLightInnerAngle = darkViewAngle;
         darkViewCone.pointLightOuterAngle = darkViewAngle;
-
-        warn = false;
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
         if (!warn)
         {
             brightViewCone.intensity = Mathf.Clamp(-Mathf.Cos(player.GetComponent<PlayerController>().timer.time / (24 * 60) * 2 * Mathf.PI) - 0.5f, 0, 1) * 1;
@@ -45,7 +47,7 @@ public class EnemyFOV : MonoBehaviour
                 if (Vector3.Angle(direction, dir) < brightViewAngle / 2)
                 {
                     RaycastHit2D ray = Physics2D.Raycast(transform.position, dir, brightViewDistance, LayerMask.GetMask("Physical"));
-                    if (ray.collider.gameObject == player)
+                    if (ray.collider != null && ray.collider.gameObject == player)
                     {
                         player.GetComponent<PlayerController>().Die();
                         brightViewCone.intensity = 1;
