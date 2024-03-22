@@ -28,7 +28,7 @@ public class LineController : MonoBehaviour
         interactpos = new Vector3[] { Vector3.zero, Vector3.zero };
         interactpos[0] = sprite.transform.position;
         Vector3 dir = (worldPos - sprite.transform.position).normalized;
-        RaycastHit2D ray = Physics2D.Raycast(sprite.transform.position, dir, 100, LayerMask.GetMask("Physical"));
+        RaycastHit2D ray = Physics2D.Raycast(sprite.transform.position, dir, (worldPos - sprite.transform.position).magnitude, LayerMask.GetMask("Physical"));
         if (ray.collider != null)
         {
             interactpos[1] = ray.point;
@@ -44,7 +44,7 @@ public class LineController : MonoBehaviour
             if (ray.collider != null)
             {
                 GameObject newDart = Instantiate(dart, ray.point, targetRotation, ray.collider.transform);
-                newDart.transform.localScale = new Vector3(0.2f / newDart.transform.parent.localScale.x, 0.5f / newDart.transform.parent.localScale.y, 1 / newDart.transform.parent.localScale.z);
+                newDart.transform.localScale = new Vector3(0.2f / newDart.transform.parent.localScale.y, 0.5f / newDart.transform.parent.localScale.x, 1 / newDart.transform.parent.localScale.z);
                 sprite.GetComponent<PlayerController>().spawns.Add(newDart);
             }
             else
